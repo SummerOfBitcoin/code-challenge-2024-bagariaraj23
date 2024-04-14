@@ -553,7 +553,9 @@ function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
     }
     ).join('');
 
-    const blockHeaderHash = doubleSHA256(Buffer.from(blockHeaderSerializedHex, 'hex'));
+    let blockHeaderHash = doubleSHA256(Buffer.from(blockHeaderSerializedHex, 'hex'));
+
+    blockHeaderHash = reverseHex(blockHeaderHash);
 
     return blockHeaderHash;
 }
@@ -621,6 +623,7 @@ function main() {
     let nonce = 0;
     let blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
     let target = "0000ffff00000000000000000000000000000000000000000000000000000000";
+    // console.log(target);
 
     while (true) {
         if (blockHeaderHash < target) {
@@ -628,6 +631,7 @@ function main() {
         } else {
             nonce++;
             blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
+            // console.log(nonce);
         }
     }
 
