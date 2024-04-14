@@ -578,6 +578,9 @@ function mined(timestamp, bits, prevBlock_Hash, result, nonce) {
     prevBlock_HashBytes.writeUInt32LE(blockHeader.prevBlock_Hash);
     blockHeaderSerialized.push(...prevBlock_HashBytes);
 
+    const merkleRootBytes = Buffer.from(blockHeader.merkleRoot, 'hex');
+    blockHeaderSerialized.push(...reversedBytes(merkleRootBytes));
+
     const timestampBytes = Buffer.alloc(4);
     timestampBytes.writeUInt32LE(blockHeader.timestamp);
     blockHeaderSerialized.push(...timestampBytes);
@@ -590,6 +593,7 @@ function mined(timestamp, bits, prevBlock_Hash, result, nonce) {
     nonceBytes.writeUInt32LE(blockHeader.nonce);
     blockHeaderSerialized.push(...nonceBytes);
 
+    // console.log(blockHeaderSerialized);
 
     const blockHeaderSerializedHex = blockHeaderSerialized.map(byte => {
         return byte.toString(16).padStart(2, '0');
