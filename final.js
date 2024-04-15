@@ -376,11 +376,17 @@ function wTxidCommitment(finalWTxidArray) {
 
     let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
 
-    wTxidMerkleRoot = wTxidMerkleRoot.match(/../g).reverse().join('');
+    // wTxidMerkleRoot = wTxidMerkleRoot.match(/../g).reverse().join('');
 
     // console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
+    let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
-    return wTxidMerkleRoot;
+    wTxidComm = (witnessReservedValue + wTxidMerkleRoot);
+    wTxidCommFinal = singleSHA256(wTxidComm);
+
+    // console.log("wTxidCommFinal:", wTxidCommFinal);
+
+    return wTxidCommFinal;
 }
 
 function coinbaseTxidCalc(parsedData) {
@@ -451,9 +457,9 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
     netReward += (3.125 * 100000000);
 
     let commitmentHeader = "aa21a9ed";
-    let witnessCommitment = wTxidCommitment(finalWTxidArray);
+    let wTxidCommFinal = wTxidCommitment(finalWTxidArray);
 
-    let scriptpubkeysize = (4 + commitmentHeader.length + witnessCommitment.length);
+    let scriptpubkeysize = (4 + commitmentHeader.length + wTxidCommFinal.length);
     scriptpubkeysize = scriptpubkeysize / 2;
     scriptpubkeysize = scriptpubkeysize.toString(16);
     scriptpubkeysize = scriptpubkeysize.padStart(2, '0');
@@ -488,7 +494,7 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
             {
                 "value": 0,
                 "scriptpubkeysize": scriptpubkeysize,
-                "scriptpubkey": "6a" + "24" + commitmentHeader + witnessCommitment, //OP_RETURN + 36 bytes + commitmentHeader + witnessCommitment
+                "scriptpubkey": "6a" + "24" + commitmentHeader + wTxidCommFinal, //OP_RETURN + 36 bytes + commitmentHeader + witnessCommitment
             }
         ],
         "witness": [{
