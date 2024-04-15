@@ -364,19 +364,15 @@ function wTxidCommitment(finalWTxidArray) {
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
 
-    //swap index 1 and 2 elt
-    let temp = wTxidArray[1];
-    wTxidArray[1] = wTxidArray[2];
-    wTxidArray[2] = temp;
+    // const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
 
-    // console.log("wTxidArray:", wTxidArray);
-    fs.writeFileSync('./mempoolTempFinalArray/wTxidArray.json', JSON.stringify(wTxidArray));
+    let wTxidMerkleRoot = merkleRoot(wTxidArray);
 
-    const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
-
-    let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
+    // console.log(wTxidMerkleRoot);
 
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
+
+    // console.log(wTxidMerkleRoot + witnessReservedValue);
 
     wTxidComm = wTxidMerkleRoot + witnessReservedValue;
     wTxidCommFinal = singleSHA256(wTxidComm);
@@ -489,7 +485,7 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
             {
                 "value": 0,
                 "scriptpubkeysize": scriptpubkeysize,
-                "scriptpubkey": "6a" + "24" + commitmentHeader + wTxidCommFinal, //OP_RETURN + 36 bytes + commitmentHeader + witnessCommitment
+                "scriptpubkey": "6a" + "24" + commitmentHeader + wTxidCommFinal,
             }
         ],
         "witness": [{
