@@ -326,11 +326,10 @@ function merkleRoot(txids) {
     const result = [];
 
     for (let i = 0; i < txids.length; i += 2) {
-        //reverse txids and insert in one and two
-        // const one = txids[i].split('').reverse().join(''); // Reverse the first txid
-        // const two = txids[i + 1] ? txids[i + 1].split('').reverse().join('') : one;
-        const one = txids[i];
-        const two = txids[i + 1] ? txids[i + 1] : one;
+        const one = txids[i].match(/../g).reverse().join('');
+        const two = txids[i + 1] ? txids[i + 1].match(/../g).reverse().join('') : one;
+        // const one = txids[i];
+        // const two = txids[i + 1] ? txids[i + 1] : one;
         const concat = one + two;
 
         result.push(doubleSHA256(concat));
@@ -347,11 +346,11 @@ function wTxidCommitment(finalWTxidArray) {
 
     // console.log("wTxidArray:", wTxidArray);
 
-    // const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
+    const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
 
     // console.log("wTxidByteOrder:", wTxidByteOrder);
 
-    const wTxidMerkleRoot = merkleRoot(wTxidArray);
+    const wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
 
     // console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
 
