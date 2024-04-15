@@ -364,13 +364,19 @@ function wTxidCommitment(finalWTxidArray) {
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
 
+    //swap index 1 and 2 elt
+    let temp = wTxidArray[1];
+    wTxidArray[1] = wTxidArray[2];
+    wTxidArray[2] = temp;
+
     // console.log("wTxidArray:", wTxidArray);
+    fs.writeFileSync('./mempoolTempFinalArray/wTxidArray.json', JSON.stringify(wTxidArray));
 
     const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
 
-    // console.log("wTxidByteOrder:", wTxidByteOrder);
+    let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
 
-    const wTxidMerkleRoot = newMerkle(wTxidByteOrder);
+    wTxidMerkleRoot = wTxidMerkleRoot.match(/../g).reverse().join('');
 
     // console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
 
@@ -465,7 +471,7 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
                     value: netReward
                 },
                 "scriptsigsize": "32",
-                "scriptsig": "03" + block_Height + "135368726579612052616a204261676172696120256c0000946e0100",
+                "scriptsig": "03" + block_Height + "135368726579612052616a204261676172696120076c0000946e0100",
                 "witness": [
                     "0000000000000000000000000000000000000000000000000000000000000000",
                 ],
