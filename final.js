@@ -286,6 +286,8 @@ function operation(parsedArray) {
     fs.writeFileSync('./mempoolTempFinalArray/wTxidArray.json', JSON.stringify(txidArray));
     fs.writeFileSync('./mempoolTempFinalArray/txidArrayReversed.json', JSON.stringify(txidReverse));
     fs.writeFileSync('./mempoolTempFinalArray/serializedArrayFileName.json', JSON.stringify(fileNameAfterOperation));
+
+    // return { considerationArray, weightArray, txidArray, txids}
 }
 
 // Files added in the fileArray
@@ -365,7 +367,7 @@ function coinbaseTxidCalc(parsedData) {
         const serializedOut = serializedOutput.map(byte => {
             return byte.toString(16).padStart(2, '0');
         }).join('');
-        
+
         weightFinal += witnessBytesLength;
         weight = weightFinal;
 
@@ -535,6 +537,9 @@ function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
     prevBlock_HashBytes.writeUInt32LE(blockHeader.prevBlock_Hash);
     blockHeaderSerialized.push(...prevBlock_HashBytes);
 
+    const merkleRootBytes = Buffer.from(blockHeader.merkleRoot, 'hex');
+    blockHeaderSerialized.push(...reversedBytes(merkleRootBytes));
+
     const timestampBytes = Buffer.alloc(4);
     timestampBytes.writeUInt32LE(blockHeader.timestamp);
     blockHeaderSerialized.push(...timestampBytes);
@@ -547,7 +552,6 @@ function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
     nonceBytes.writeUInt32LE(blockHeader.nonce);
     blockHeaderSerialized.push(...nonceBytes);
 
-
     const blockHeaderSerializedHex = blockHeaderSerialized.map(byte => {
         return byte.toString(16).padStart(2, '0');
     }
@@ -555,7 +559,9 @@ function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
 
     let blockHeaderHash = doubleSHA256(Buffer.from(blockHeaderSerializedHex, 'hex'));
 
+    // console.log("before:",blockHeaderHash);
     blockHeaderHash = reverseHex(blockHeaderHash);
+    // console.log("after:",blockHeaderHash);
 
     return blockHeaderHash;
 }
