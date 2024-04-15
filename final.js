@@ -507,6 +507,8 @@ function preMineBlock(considerationArray) {
     let selectedTxids = [];
     selectedTxids.push(txid1);
     selectedTxids.push(...finalTxidArray);
+    //reverse the txids in selectedTxids
+    selectedTxids = selectedTxids.map(x => x.match(/../g).reverse().join(''));
     fs.writeFileSync("./finallyTxidsSelected.json", JSON.stringify(selectedTxids));
 
     const txidsByteOrder = selectedTxids.map(x => x.match(/../g).reverse().join(''));
@@ -599,8 +601,6 @@ function mined(timestamp, bits, prevBlock_Hash, result, nonce) {
     const nonceBytes = Buffer.alloc(4);
     nonceBytes.writeUInt32LE(blockHeader.nonce);
     blockHeaderSerialized.push(...nonceBytes);
-
-    // console.log(blockHeaderSerialized);
 
     const blockHeaderSerializedHex = blockHeaderSerialized.map(byte => {
         return byte.toString(16).padStart(2, '0');
