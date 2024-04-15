@@ -376,15 +376,10 @@ function wTxidCommitment(finalWTxidArray) {
 
     let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
 
-    // wTxidMerkleRoot = wTxidMerkleRoot.match(/../g).reverse().join('');
-
-    // console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
-    wTxidComm = (witnessReservedValue + wTxidMerkleRoot);
+    wTxidComm = wTxidMerkleRoot + witnessReservedValue;
     wTxidCommFinal = singleSHA256(wTxidComm);
-
-    // console.log("wTxidCommFinal:", wTxidCommFinal);
 
     return wTxidCommFinal;
 }
