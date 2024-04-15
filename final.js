@@ -472,11 +472,19 @@ function preMineBlock(considerationArray) {
     const prevBlock_Hash = 0x00000000000000000000000000000000;
 
     let timestamp = Date.now();
-    timestamp = timestamp / 1000;
+    // console.log(timestamp);
+    // timestamp = timestamp / 1000;
+    // console.log(timestamp);
     timestamp = timestamp.toString(16);
+    // console.log(timestamp);
     timestamp = timestamp.padStart(4, '0');
+    // console.log(timestamp);
     timestamp = timestamp.slice(0, 8);
     timestamp = reverseHex(timestamp);
+
+    // console.log("timestamp:", timestamp)
+    
+    
     const bits = "1d00ffff";
 
     // Write the final shortlisted files in a folder named mempoolTempFinalArray that will be used for the final block:
