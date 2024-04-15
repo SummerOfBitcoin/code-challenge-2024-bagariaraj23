@@ -287,7 +287,7 @@ function operation(parsedArray) {
     fs.writeFileSync('./mempoolTempFinalArray/txidArrayReversed.json', JSON.stringify(txidReverse));
     fs.writeFileSync('./mempoolTempFinalArray/serializedArrayFileName.json', JSON.stringify(fileNameAfterOperation));
 
-    // return { considerationArray, weightArray, txidArray, txids}
+    return { considerationArray, weightArray, txidArray, txids }
 }
 
 // Files added in the fileArray
@@ -352,7 +352,6 @@ function coinbaseTxidCalc(parsedData) {
     let weightFinal = 0;
     let wTxid = 0;
     let txidReversed = 0;
-    let fileName = 0;
 
     let { serializedOutput, txnFee, weight } = txidCalc(data);
     const serializedOut = serializedOutput.map(byte => {
@@ -379,7 +378,6 @@ function coinbaseTxidCalc(parsedData) {
     }
 
     return { txid1, wTxid, weight, serializedOut };
-
 }
 
 function coinbaseTxn(fileArray, finalWTxidArray) {
@@ -467,7 +465,7 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
     return { txid1, serializedOut };
 }
 
-function preMineBlock() {
+function preMineBlock(considerationArray) {
     const prevBlock_Hash = 0x00000000000000000000000000000000;
 
     let timestamp = Date.now();
@@ -479,7 +477,8 @@ function preMineBlock() {
     const bits = "1d00ffff";
 
     // Write the final shortlisted files in a folder named mempoolTempFinalArray that will be used for the final block:
-    data = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/considerationArray.json', 'utf8'));
+    // data = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/considerationArray.json', 'utf8'));
+    data = considerationArray;
     data.sort((a, b) => (a.txnFee / a.weight) - (b.txnFee / b.weight));
     data.reverse();
 
@@ -505,16 +504,16 @@ function preMineBlock() {
 
     const { txid1, serializedOut } = coinbaseTxn(consideredFiles, finalWTxidArray);
 
-    let txids = [];
-    txids.push(txid1);
-    txids.push(...finalTxidArray);
-    fs.writeFileSync("./finallyTxidsSelected.json", JSON.stringify(txids));
+    let selectedTxids = [];
+    selectedTxids.push(txid1);
+    selectedTxids.push(...finalTxidArray);
+    fs.writeFileSync("./finallyTxidsSelected.json", JSON.stringify(selectedTxids));
 
-    const txidsByteOrder = txids.map(x => x.match(/../g).reverse().join(''));
+    const txidsByteOrder = selectedTxids.map(x => x.match(/../g).reverse().join(''));
 
     const result = merkleRoot(txidsByteOrder);
 
-    return { timestamp, bits, prevBlock_Hash, result, txid1, txids, serializedOut };
+    return { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut };
 }
 
 function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
@@ -538,7 +537,7 @@ function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
     blockHeaderSerialized.push(...prevBlock_HashBytes);
 
     const merkleRootBytes = Buffer.from(blockHeader.merkleRoot, 'hex');
-    blockHeaderSerialized.push(...reversedBytes(merkleRootBytes));
+    blockHeaderSerialized.push(...merkleRootBytes);
 
     const timestampBytes = Buffer.alloc(4);
     timestampBytes.writeUInt32LE(blockHeader.timestamp);
@@ -587,7 +586,7 @@ function mined(timestamp, bits, prevBlock_Hash, result, nonce) {
     blockHeaderSerialized.push(...prevBlock_HashBytes);
 
     const merkleRootBytes = Buffer.from(blockHeader.merkleRoot, 'hex');
-    blockHeaderSerialized.push(...reversedBytes(merkleRootBytes));
+    blockHeaderSerialized.push(...merkleRootBytes);
 
     const timestampBytes = Buffer.alloc(4);
     timestampBytes.writeUInt32LE(blockHeader.timestamp);
@@ -613,9 +612,9 @@ function mined(timestamp, bits, prevBlock_Hash, result, nonce) {
 
 function main() {
     const parsedArray = fetchDataFromFiles();
-    operation(parsedArray);
+    let { considerationArray, weightArray, txidArray, txids } = operation(parsedArray);
 
-    weightArray = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/weightArray.json', 'utf8'));
+    // weightArray = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/weightArray.json', 'utf8'));
     let countWeight = 0;
     weightArray.map((weight) => {
         if (weight >= 4000) {
@@ -624,30 +623,30 @@ function main() {
 
     })
 
-    const { timestamp, bits, prevBlock_Hash, result, txid1, txids, serializedOut } = preMineBlock();
+    const { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut } = preMineBlock(considerationArray);
 
     let nonce = 0;
     let blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
     let target = "0000ffff00000000000000000000000000000000000000000000000000000000";
     // console.log(target);
 
-    while (true) {
-        if (blockHeaderHash < target) {
-            break;
-        } else {
-            nonce++;
-            blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
-            // console.log(nonce);
-        }
-    }
+    // while (true) {
+    //     if (blockHeaderHash < target) {
+    //         break;
+    //     } else {
+    //         nonce++;
+    //         blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
+    //         // console.log(nonce);
+    //     }
+    // }
 
     let blockHeaderSerializedHex = mined(timestamp, bits, prevBlock_Hash, result, nonce);
 
     console.log(blockHeaderSerializedHex);
     console.log(serializedOut);
-    txids.forEach(txid => {
-        console.log(txid);
-    });
+    // selectedTxids.forEach(txid => {
+    //     console.log(txid);
+    // });
 }
 
 main();
