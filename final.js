@@ -326,16 +326,36 @@ function merkleRoot(txids) {
     const result = [];
 
     for (let i = 0; i < txids.length; i += 2) {
-        const one = txids[i].match(/../g).reverse().join('');
-        const two = txids[i + 1] ? txids[i + 1].match(/../g).reverse().join('') : one;
-        // const one = txids[i];
-        // const two = txids[i + 1] ? txids[i + 1] : one;
+        // const one = txids[i].match(/../g).reverse().join('');
+        // const two = txids[i + 1] ? txids[i + 1].match(/../g).reverse().join('') : one;
+        const one = txids[i];
+        const two = txids[i + 1] ? txids[i + 1] : one;
         const concat = one + two;
 
         result.push(doubleSHA256(concat));
     }
 
     return merkleRoot(result);
+}
+
+function newMerkle(wtxids){
+    if (wtxids.length === 1) {
+        return wtxids[0];
+    }
+
+    const result = [];
+
+    for (let i = 0; i < wtxids.length; i += 2) {
+        const one = wtxids[i].match(/../g).reverse().join('');
+        const two = wtxids[i + 1] ? wtxids[i + 1].match(/../g).reverse().join('') : one;
+        // const one = wtxids[i];
+        // const two = wtxids[i + 1] ? wtxids[i + 1] : one;
+        const concat = one + two;
+
+        result.push(doubleSHA256(concat));
+    }
+
+    return newMerkle(result);
 }
 
 function wTxidCommitment(finalWTxidArray) {
@@ -350,7 +370,7 @@ function wTxidCommitment(finalWTxidArray) {
 
     // console.log("wTxidByteOrder:", wTxidByteOrder);
 
-    const wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
+    const wTxidMerkleRoot = newMerkle(wTxidByteOrder);
 
     // console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
 
