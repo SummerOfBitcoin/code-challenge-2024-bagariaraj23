@@ -471,15 +471,10 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
 function preMineBlock(considerationArray) {
     const prevBlock_Hash = 0x00000000000000000000000000000000;
 
-//  Timestamp
-//     Size: 4 bytes
-//     Type: unsigned integer
-//     Format: little - endian
-// Current Example: d73e1866(i.e. 1712864983 or 0x66183ed7)
     const currentTime = Math.floor(Date.now() / 1000);
     const timestamp = currentTime;
 
-    const bits = "1d00ffff";
+    const bits = "17034219";
 
     // Write the final shortlisted files in a folder named mempoolTempFinalArray that will be used for the final block:
     // data = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/considerationArray.json', 'utf8'));
