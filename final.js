@@ -327,10 +327,10 @@ function merkleRoot(txids) {
 
     for (let i = 0; i < txids.length; i += 2) {
         //reverse txids and insert in one and two
-        const one = txids[i].split('').reverse().join(''); // Reverse the first txid
-        const two = txids[i + 1] ? txids[i + 1].split('').reverse().join('') : one;
-        // const one = txids[i];
-        // const two = txids[i + 1] ? txids[i + 1] : one;
+        // const one = txids[i].split('').reverse().join(''); // Reverse the first txid
+        // const two = txids[i + 1] ? txids[i + 1].split('').reverse().join('') : one;
+        const one = txids[i];
+        const two = txids[i + 1] ? txids[i + 1] : one;
         const concat = one + two;
 
         result.push(doubleSHA256(concat));
