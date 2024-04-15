@@ -474,7 +474,7 @@ function preMineBlock(considerationArray) {
     const currentTime = Math.floor(Date.now() / 1000);
     const timestamp = currentTime;
 
-    const bits = "17034219";
+    const bits = "1f00ffff";
 
     // Write the final shortlisted files in a folder named mempoolTempFinalArray that will be used for the final block:
     // data = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/considerationArray.json', 'utf8'));
