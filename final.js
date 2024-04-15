@@ -353,7 +353,7 @@ function wTxidCommitment(finalWTxidArray) {
 
     const wTxidMerkleRoot = merkleRoot(wTxidArray);
 
-    console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
+    // console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
 
     return wTxidMerkleRoot;
 }
