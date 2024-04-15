@@ -633,23 +633,23 @@ function main() {
     let target = "0000ffff00000000000000000000000000000000000000000000000000000000";
     // console.log(target);
 
-    // while (true) {
-    //     if (blockHeaderHash < target) {
-    //         break;
-    //     } else {
-    //         nonce++;
-    //         blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
-    //         // console.log(nonce);
-    //     }
-    // }
+    while (true) {
+        if (blockHeaderHash < target) {
+            break;
+        } else {
+            nonce++;
+            blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
+            // console.log(nonce);
+        }
+    }
 
     let blockHeaderSerializedHex = mined(timestamp, bits, prevBlock_Hash, result, nonce);
 
     console.log(blockHeaderSerializedHex);
     console.log(serializedOut);
-    // selectedTxids.forEach(txid => {
-    //     console.log(txid);
-    // });
+    selectedTxids.forEach(txid => {
+        console.log(txid);
+    });
 }
 
 main();
