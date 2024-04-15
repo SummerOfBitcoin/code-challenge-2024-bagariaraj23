@@ -344,8 +344,16 @@ function wTxidCommitment(finalWTxidArray) {
     let cbtxId = "0000000000000000000000000000000000000000000000000000000000000000"
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
-    const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
-    const wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
+
+    // console.log("wTxidArray:", wTxidArray);
+
+    // const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
+
+    // console.log("wTxidByteOrder:", wTxidByteOrder);
+
+    const wTxidMerkleRoot = merkleRoot(wTxidArray);
+
+    console.log("wTxidMerkleRoot:", wTxidMerkleRoot);
 
     return wTxidMerkleRoot;
 }
@@ -516,6 +524,7 @@ function preMineBlock(considerationArray) {
     //reverse the txids in selectedTxids
     selectedTxids = selectedTxids.map(x => x.match(/../g).reverse().join(''));
     fs.writeFileSync("./finallyTxidsSelected.json", JSON.stringify(selectedTxids));
+    fs.writeFileSync("./finallyWTxidsSelected.json", JSON.stringify(finalWTxidArray));
 
     const txidsByteOrder = selectedTxids.map(x => x.match(/../g).reverse().join(''));
 
