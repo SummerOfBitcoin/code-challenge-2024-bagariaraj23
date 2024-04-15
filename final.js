@@ -355,6 +355,7 @@ function coinbaseTxidCalc(parsedData) {
     let weightFinal = 0;
     let wTxid = 0;
     let txidReversed = 0;
+    let segwitSerializedOutput = [];
 
     let { serializedOutput, txnFee, weight } = txidCalc(data);
     const serializedOut = serializedOutput.map(byte => {
@@ -378,9 +379,14 @@ function coinbaseTxidCalc(parsedData) {
         txidReversed = reverseHex(txid1);
 
         fileName = singleSHA256(txidReversed) + ".json"
+
+        segwitSerializedOutput = serializedOutput.map(byte => {
+            return byte.toString(16).padStart(2, '0');
+        }
+        ).join(''); 
     }
 
-    return { txid1, wTxid, weight, serializedOut };
+    return { txid1, wTxid, weight, serializedOut, segwitSerializedOutput };
 }
 
 function coinbaseTxn(fileArray, finalWTxidArray) {
@@ -463,9 +469,9 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
         "locktime": "00000000",
     };
 
-    const { txid1, wTxid, weight, serializedOut } = coinbaseTxidCalc(coinbaseTx);
+    const { txid1, wTxid, weight, serializedOut, segwitSerializedOutput } = coinbaseTxidCalc(coinbaseTx);
 
-    return { txid1, serializedOut };
+    return { txid1, serializedOut, segwitSerializedOutput };
 }
 
 function preMineBlock(considerationArray) {
@@ -502,7 +508,7 @@ function preMineBlock(considerationArray) {
         }
     }
 
-    const { txid1, serializedOut } = coinbaseTxn(consideredFiles, finalWTxidArray);
+    const { txid1, serializedOut, segwitSerializedOutput } = coinbaseTxn(consideredFiles, finalWTxidArray);
 
     let selectedTxids = [];
     selectedTxids.push(txid1);
@@ -515,7 +521,7 @@ function preMineBlock(considerationArray) {
 
     const result = merkleRoot(txidsByteOrder);
 
-    return { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut };
+    return { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut, segwitSerializedOutput };
 }
 
 function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
@@ -623,7 +629,7 @@ function main() {
 
     })
 
-    const { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut } = preMineBlock(considerationArray);
+    const { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut, segwitSerializedOutput } = preMineBlock(considerationArray);
 
     let nonce = 0;
     let blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
@@ -643,7 +649,8 @@ function main() {
     let blockHeaderSerializedHex = mined(timestamp, bits, prevBlock_Hash, result, nonce);
 
     console.log(blockHeaderSerializedHex);
-    console.log(serializedOut);
+    // console.log(serializedOut);
+    console.log(segwitSerializedOutput);
     selectedTxids.forEach(txid => {
         console.log(txid);
     });
