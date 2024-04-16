@@ -7,7 +7,6 @@ const {
     singleSHA256
 } = require('./utils/utilFunctions');
 
-
 const checkSegwit = (txn) => {
     let segwit = false;
     for (const vin of txn.vin) {
@@ -613,7 +612,7 @@ function main(){
     // weightArray contains the weight of all the txns
     // txidArray contains the wTxids of the txns
     // txids contains the txids of the txns
-    const { considerationArray, weightArray, txidArray, txids } = operation(parsedArray);
+    let { considerationArray, weightArray, txidArray, txids } = operation(parsedArray);
 
     // We have got everything to mine the block :
     // timestamp = time.now();
