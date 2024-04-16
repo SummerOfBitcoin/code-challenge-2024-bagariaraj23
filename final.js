@@ -326,8 +326,6 @@ function merkleRoot(txids) {
     const result = [];
 
     for (let i = 0; i < txids.length; i += 2) {
-        // const one = txids[i].match(/../g).reverse().join('');
-        // const two = txids[i + 1] ? txids[i + 1].match(/../g).reverse().join('') : one;
         const one = txids[i];
         const two = txids[i + 1] ? txids[i + 1] : one;
         const concat = one + two;
@@ -338,41 +336,17 @@ function merkleRoot(txids) {
     return merkleRoot(result);
 }
 
-function newMerkle(wtxids){
-    if (wtxids.length === 1) {
-        return wtxids[0];
-    }
-
-    const result = [];
-
-    for (let i = 0; i < wtxids.length; i += 2) {
-        const one = wtxids[i].match(/../g).reverse().join('');
-        const two = wtxids[i + 1] ? wtxids[i + 1].match(/../g).reverse().join('') : one;
-        // const one = wtxids[i];
-        // const two = wtxids[i + 1] ? wtxids[i + 1] : one;
-        const concat = one + two;
-
-        result.push(doubleSHA256(concat));
-    }
-
-    return newMerkle(result);
-}
-
 function wTxidCommitment(finalWTxidArray) {
     let wTxidArray = [];
     let cbtxId = "0000000000000000000000000000000000000000000000000000000000000000"
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
 
-    // const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
+    const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
 
-    let wTxidMerkleRoot = merkleRoot(wTxidArray);
-
-    // console.log(wTxidMerkleRoot);
+    let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
 
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
-
-    // console.log(wTxidMerkleRoot + witnessReservedValue);
 
     wTxidComm = wTxidMerkleRoot + witnessReservedValue;
     wTxidCommFinal = singleSHA256(wTxidComm);
@@ -512,8 +486,6 @@ function preMineBlock(considerationArray) {
 
     const bits = 0x1f00ffff;
 
-    // Write the final shortlisted files in a folder named mempoolTempFinalArray that will be used for the final block:
-    // data = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/considerationArray.json', 'utf8'));
     data = considerationArray;
     data.sort((a, b) => (a.txnFee / a.weight) - (b.txnFee / b.weight));
     data.reverse();
@@ -545,8 +517,6 @@ function preMineBlock(considerationArray) {
     selectedTxids.push(...finalTxidArray);
     //reverse the txids in selectedTxids
     selectedTxids = selectedTxids.map(x => x.match(/../g).reverse().join(''));
-    fs.writeFileSync("./finallyTxidsSelected.json", JSON.stringify(selectedTxids));
-    fs.writeFileSync("./finallyWTxidsSelected.json", JSON.stringify(finalWTxidArray));
 
     const txidsByteOrder = selectedTxids.map(x => x.match(/../g).reverse().join(''));
 
@@ -651,7 +621,6 @@ function main() {
     const parsedArray = fetchDataFromFiles();
     let { considerationArray, weightArray, txidArray, txids } = operation(parsedArray);
 
-    // weightArray = JSON.parse(fs.readFileSync('./mempoolTempFinalArray/weightArray.json', 'utf8'));
     let countWeight = 0;
     weightArray.map((weight) => {
         if (weight >= 4000) {
@@ -680,7 +649,6 @@ function main() {
     let blockHeaderSerializedHex = mined(timestamp, bits, prevBlock_Hash, result, nonce);
 
     console.log(blockHeaderSerializedHex);
-    // console.log(serializedOut);
     console.log(segwitSerializedOutput);
     selectedTxids.forEach(txid => {
         console.log(txid);
