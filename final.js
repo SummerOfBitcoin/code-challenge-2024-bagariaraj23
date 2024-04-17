@@ -330,13 +330,13 @@ function wTxidCommitment(finalWTxidArray) {
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
 
-    // const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
-    let wTxidMerkleRoot = merkleRoot(wTxidArray);
+    const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
+    let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
 
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
     wTxidComm = wTxidMerkleRoot + witnessReservedValue;
-    wTxidCommFinal = doubleSHA256(wTxidComm);
+    wTxidCommFinal = singleSHA256(wTxidComm);
 
     return wTxidCommFinal;
 }
