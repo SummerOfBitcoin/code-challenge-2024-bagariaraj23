@@ -342,9 +342,9 @@ function wTxidCommitment(finalWTxidArray) {
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
 
-    const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
+    // const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
 
-    let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
+    let wTxidMerkleRoot = merkleRoot(wTxidArray);
 
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
