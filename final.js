@@ -342,16 +342,12 @@ function wTxidCommitment(finalWTxidArray) {
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
 
-    // const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
-
     let wTxidMerkleRoot = merkleRoot(wTxidArray);
 
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
     wTxidComm = wTxidMerkleRoot + witnessReservedValue;
     wTxidCommFinal = doubleSHA256(wTxidComm);
-
-    // console.log(wTxidCommFinal)
 
     return wTxidCommFinal;
 }
@@ -389,7 +385,7 @@ function coinbaseTxidCalc(parsedData) {
         segwitSerializedOutput = serializedOutput.map(byte => {
             return byte.toString(16).padStart(2, '0');
         }
-        ).join(''); 
+        ).join('');
     }
 
     return { txid1, wTxid, weight, serializedOut, segwitSerializedOutput };
@@ -569,10 +565,7 @@ function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
 
     let blockHeaderHash = doubleSHA256(Buffer.from(blockHeaderSerializedHex, 'hex'));
 
-    // console.log("before:",blockHeaderHash);
     blockHeaderHash = reverseHex(blockHeaderHash);
-    // console.log("after:",blockHeaderHash);
-
     return blockHeaderHash;
 }
 
@@ -636,7 +629,6 @@ function main() {
     let nonce = 0;
     let blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
     let target = "0000ffff00000000000000000000000000000000000000000000000000000000";
-    // console.log(target);
 
     while (true) {
         if (blockHeaderHash < target) {
