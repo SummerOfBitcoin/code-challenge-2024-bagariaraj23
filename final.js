@@ -349,7 +349,9 @@ function wTxidCommitment(finalWTxidArray) {
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
     wTxidComm = wTxidMerkleRoot + witnessReservedValue;
-    wTxidCommFinal = singleSHA256(wTxidComm);
+    wTxidCommFinal = doubleSHA256(wTxidComm);
+
+    // console.log(wTxidCommFinal)
 
     return wTxidCommFinal;
 }
