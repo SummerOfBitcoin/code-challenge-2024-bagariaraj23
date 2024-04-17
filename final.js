@@ -344,12 +344,21 @@ function wTxidCommitment(finalWTxidArray) {
 
     const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
 
+    // console.log(wTxidArray[3351])
+    // console.log(wTxidArray[3352])
+    // console.log(wTxidArray[3353])
+    // console.log(wTxidByteOrder.length)
+
+    
     let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
+    // console.log("merkle:", wTxidMerkleRoot)
 
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
     wTxidComm = wTxidMerkleRoot + witnessReservedValue;
-    wTxidCommFinal = singleSHA256(wTxidComm);
+    wTxidCommFinal = doubleSHA256(wTxidComm);
+
+    // console.log("wTxidCommFinal:", wTxidCommFinal)
 
     return wTxidCommFinal;
 }
