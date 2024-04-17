@@ -211,7 +211,7 @@ const wTXIDCalc = (txn) => {
     return { serializedOutput, txnFee, weight, witnessBytesLength };
 }
 
-//fetches the txid, txidReverse, FeeArraySorted, txidArraySorted and fileName after operation:
+// this function returns the rxids, wtxids, weight, fee and the filenames for each files in a "considerationArray"
 function operation(parsedArray) {
     let txidArray = [];
     let txidReverse = [];
@@ -231,8 +231,6 @@ function operation(parsedArray) {
         const txid1 = doubleSHA256(Buffer.from(serializedOut, 'hex'));
         txids.push(txid1);
         weightFinal += weight;
-
-        fs.writeFileSync('./mempoolTempFinalArray/txids.json', JSON.stringify(txids));
 
         if (checkSegwit(data)) {
             let { serializedOutput, txnFee, weight, witnessBytesLength } = wTXIDCalc(data);
@@ -281,17 +279,9 @@ function operation(parsedArray) {
         }
     })
 
-    fs.writeFileSync('./mempoolTempFinalArray/considerationArray.json', JSON.stringify(considerationArray));
-    fs.writeFileSync('./mempoolTempFinalArray/weightArray.json', JSON.stringify(weightArray));
-    fs.writeFileSync('./mempoolTempFinalArray/wTxidArray.json', JSON.stringify(txidArray));
-    fs.writeFileSync('./mempoolTempFinalArray/txidArrayReversed.json', JSON.stringify(txidReverse));
-    fs.writeFileSync('./mempoolTempFinalArray/serializedArrayFileName.json', JSON.stringify(fileNameAfterOperation));
-
     return { considerationArray, weightArray, txidArray, txids }
 }
 
-// Files added in the fileArray
-// Data added in the dataArray
 function fetchDataFromFiles() {
     const folder = "./mempool";
     let fileArray = []
@@ -301,9 +291,6 @@ function fetchDataFromFiles() {
         count++;
     }
     );
-
-    // write the fileArray in a folder named mempoolTemp --> contains the files in sorted order
-    fs.writeFileSync('./mempoolTempFinalArray/fileArray.json', JSON.stringify(fileArray));
 
     let DataArray = [];
 
@@ -318,6 +305,7 @@ function fetchDataFromFiles() {
     return parsedArray;
 }
 
+//merkle root implementation where the txids are concatenated and then db256 hashed (in takes the txids in reverse order already)
 function merkleRoot(txids) {
     if (txids.length === 1) {
         return txids[0];
@@ -342,12 +330,13 @@ function wTxidCommitment(finalWTxidArray) {
     wTxidArray.push(cbtxId);
     wTxidArray.push(...finalWTxidArray);
 
-    let wTxidMerkleRoot = merkleRoot(wTxidArray);
+    const wTxidByteOrder = wTxidArray.map(x => x.match(/../g).reverse().join(''));
+    let wTxidMerkleRoot = merkleRoot(wTxidByteOrder);
 
     let witnessReservedValue = "0000000000000000000000000000000000000000000000000000000000000000";
 
     wTxidComm = wTxidMerkleRoot + witnessReservedValue;
-    wTxidCommFinal = doubleSHA256(wTxidComm);
+    wTxidCommFinal = singleSHA256(wTxidComm);
 
     return wTxidCommFinal;
 }
@@ -377,10 +366,6 @@ function coinbaseTxidCalc(parsedData) {
         weight = weightFinal;
 
         wTxid = doubleSHA256(Buffer.from(serializedOut, 'hex'));
-
-        txidReversed = reverseHex(txid1);
-
-        fileName = singleSHA256(txidReversed) + ".json"
 
         segwitSerializedOutput = serializedOutput.map(byte => {
             return byte.toString(16).padStart(2, '0');
@@ -476,6 +461,7 @@ function coinbaseTxn(fileArray, finalWTxidArray) {
     return { txid1, serializedOut, segwitSerializedOutput };
 }
 
+// calls the coinbaseTxn function and returns the required values for mining the block (timestamp, nonce, bits, prevBlock_Hash, merkleRoot)
 function preMineBlock(considerationArray) {
     const prevBlock_Hash = 0x00000000000000000000000000000000;
 
@@ -508,6 +494,9 @@ function preMineBlock(considerationArray) {
         }
     }
 
+    // txid1 is the non segwit Txid
+    // serializedOut is the non segwit serialisedOutput
+    // segwitSerializedOutput is the segwit serialisedOutput
     const { txid1, serializedOut, segwitSerializedOutput } = coinbaseTxn(consideredFiles, finalWTxidArray);
 
     let selectedTxids = [];
@@ -523,6 +512,7 @@ function preMineBlock(considerationArray) {
     return { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut, segwitSerializedOutput };
 }
 
+// function to mine the block
 function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
 
     const blockHeader = {
@@ -566,9 +556,11 @@ function mineBlock(timestamp, bits, prevBlock_Hash, result, nonce) {
     let blockHeaderHash = doubleSHA256(Buffer.from(blockHeaderSerializedHex, 'hex'));
 
     blockHeaderHash = reverseHex(blockHeaderHash);
+
     return blockHeaderHash;
 }
 
+// returns the serialisedOutput of the block header which satisfies the condition
 function mined(timestamp, bits, prevBlock_Hash, result, nonce) {
 
     const blockHeader = {
@@ -612,41 +604,55 @@ function mined(timestamp, bits, prevBlock_Hash, result, nonce) {
     return blockHeaderSerializedHex;
 }
 
-function main() {
+
+function main(){
     const parsedArray = fetchDataFromFiles();
+
+    // considerationArray contains all the features of the txns: weight, fee, txid, wtxid
+    // weightArray contains the weight of all the txns
+    // txidArray contains the wTxids of the txns
+    // txids contains the txids of the txns
     let { considerationArray, weightArray, txidArray, txids } = operation(parsedArray);
 
-    let countWeight = 0;
-    weightArray.map((weight) => {
-        if (weight >= 4000) {
-            countWeight++;
-        }
-
-    })
-
+    // We have got everything to mine the block :
+    // timestamp = time.now();
+    // bits = 1f00ffff;
+    // prevBlock_Hash = 0x0;
+    // result = merkleRoot of the txids(non segwit txids);
+    // txid1 = non segwit txid of the coinbase txn;
+    // selectedTxids = including the coinbase txn non segwit txid, all the other included txn's non segwit txids;
+    // serializedOut = serializedOutput of the coinbase txn;
+    // segwitSerializedOutput = segwit serializedOutput of the coinbase txn;
     const { timestamp, bits, prevBlock_Hash, result, txid1, selectedTxids, serializedOut, segwitSerializedOutput } = preMineBlock(considerationArray);
 
     let nonce = 0;
     let blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
     let target = "0000ffff00000000000000000000000000000000000000000000000000000000";
 
+    // looping through until i get the block header less than the difficulty target
     while (true) {
         if (blockHeaderHash < target) {
             break;
         } else {
             nonce++;
             blockHeaderHash = mineBlock(timestamp, bits, prevBlock_Hash, result, nonce);
-            // console.log(nonce);
         }
     }
 
+    // I get the nonce value for which the condition is satisfied, now bring the serializedOutput of the block header
     let blockHeaderSerializedHex = mined(timestamp, bits, prevBlock_Hash, result, nonce);
 
+
+    // Required answers:
+    // 1. serialised Block Header
+    // 2. Non-segwit serialised Output of the coinbase txn
+    // 3. Txids for the txns included in the block
     console.log(blockHeaderSerializedHex);
     console.log(segwitSerializedOutput);
     selectedTxids.forEach(txid => {
         console.log(txid);
     });
+
 }
 
 main();
